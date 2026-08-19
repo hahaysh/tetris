@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -e ".[dev,web]"
+
+      - name: Lint
+        run: python -m ruff check .
+
+      - name: Test
+        run: python -m pytest
+
+      - name: Run native smoke test
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+          STACKLINE_SMOKE_FRAMES: "2"
+        run: python main.py
+
+      - name: Build web artifact
+        run: |
+          mkdir -p build/web
+          python -m pygbag --build --title STACKLINE \
+            --package io.github.stackline.web --width 1000 --height 720 \
+            --ume_block 0 --template web/index.tmpl .
+
+      - name: Verify web artifact
+        run: |
+          test -s build/web/index.html
+          test -s build/web/tetris.tar.gz
+          grep -q 'user_canvas_managed: 1' build/web/index.html
+          grep -q 'browserfs@1.4.3' build/web/index.html

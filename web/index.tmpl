@@ -1,0 +1,350 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script
+  src="{{cookiecutter.cdn}}pythons.js"
+  type="module"
+  id="site"
+  data-python="python{{cookiecutter.PYBUILD}}"
+  data-LINES="{{cookiecutter.LINES}}"
+  data-COLUMNS="{{cookiecutter.COLUMNS}}"
+  data-os="vtx,snd,gui"
+  async
+  defer
+>#<!--
+
+import asyncio
+import platform
+from pathlib import Path
+
+
+async def custom_site():
+    import embed
+
+    platform.document.body.style.background = "#0f110f"
+    platform.window.transfer.hidden = true
+    platform.window.canvas.style.visibility = "visible"
+
+    bundle = "{{cookiecutter.archive}}"
+    appdir = Path(f"/data/data/{bundle}")
+    appdir.mkdir(exist_ok=True)
+
+    if platform.window.location.host.find(".itch.zone") > 0:
+        import zipfile
+
+        async with platform.fopen("{{cookiecutter.archive}}.apk", "rb") as archive:
+            with zipfile.ZipFile(archive) as zip_ref:
+                zip_ref.extractall(appdir.as_posix())
+    else:
+        import tarfile
+
+        async with platform.fopen("{{cookiecutter.archive}}.tar.gz", "rb") as archive:
+            tar = tarfile.open(fileobj=archive, mode="r:gz")
+            tar.extractall(path=appdir.as_posix(), filter="tar")
+            tar.close()
+
+    platform.run_main(PyConfig, loaderhome=appdir / "assets", loadermain=None)
+
+    while embed.counter() < 0:
+        await asyncio.sleep(0.1)
+
+    main = appdir / "assets" / "main.py"
+    if not platform.window.MM.UME:
+        __import__(__name__).__file__ = main
+        platform.window.infobox.innerText = "TAP TO BEGIN"
+        while not platform.window.MM.UME:
+            await asyncio.sleep(0.1)
+
+    await TopLevel_async_handler.start_toplevel(
+        platform.shell,
+        console=window.python.config.debug,
+    )
+    __import__(__name__).__file__ = main
+
+    def ui_callback(package):
+        platform.window.infobox.innerText = f"LOADING {package.upper()}"
+
+    await shell.source(main, callback=ui_callback)
+    platform.window.infobox.style.display = "none"
+    platform.window.config.gui_divider = 1
+    platform.window.window_resize()
+    shell.interactive()
+
+
+asyncio.run(custom_site())
+
+
+# BEGIN BLOCK
+#
+# This block separates pygbag's Python bootstrap from the customizable HTML.
+# =============================================================================
+# --></script>
+  <script type="application/javascript">
+    config = {
+      xtermjs: "{{cookiecutter.xtermjs}}",
+      _sdl2: "canvas",
+      user_canvas: 0,
+      user_canvas_managed: 1,
+      gui_divider: 2,
+      ume_block: {{cookiecutter.ume_block}},
+      can_close: {{cookiecutter.can_close}},
+      archive: "{{cookiecutter.archive}}",
+      gui_debug: 2,
+      cdn: "{{cookiecutter.cdn}}",
+      autorun: 0,
+      PYBUILD: "{{cookiecutter.PYBUILD}}",
+      fb_ar: 1.38,
+      fb_width: "{{cookiecutter.width}}",
+      fb_height: "{{cookiecutter.height}}"
+    };
+
+    function show_infobox() {
+      infobox.style.display = "block";
+      infobox.style.left = `${(window.innerWidth - infobox.offsetWidth) / 2}px`;
+      infobox.style.top = `${(window.innerHeight - infobox.offsetHeight) / 2}px`;
+    }
+  </script>
+
+  <title>{{cookiecutter.title}}</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: "Bahnschrift", "Aptos Display", sans-serif;
+      background: #0f110f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background-color: #0f110f;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      content: "";
+      pointer-events: none;
+      opacity: 0.24;
+      background-image:
+        linear-gradient(#272c27 1px, transparent 1px),
+        linear-gradient(90deg, #272c27 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    canvas.emscripten {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      display: block;
+      width: 100vw;
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: #0f110f;
+      touch-action: none;
+      visibility: hidden;
+    }
+
+    #transfer {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-content: center;
+      justify-items: center;
+      gap: 20px;
+      color: #f1eee2;
+      letter-spacing: 0;
+      background: #0f110f;
+    }
+
+    .loading-piece {
+      position: relative;
+      width: 68px;
+      height: 51px;
+    }
+
+    .loading-piece span {
+      position: absolute;
+      width: 17px;
+      height: 17px;
+      border: 2px solid #0f110f;
+      background: #45cddd;
+      animation: pulse 1.1s ease-in-out infinite alternate;
+    }
+
+    .loading-piece span:nth-child(1) { left: 0; top: 17px; }
+    .loading-piece span:nth-child(2) { left: 17px; top: 17px; animation-delay: 80ms; }
+    .loading-piece span:nth-child(3) { left: 34px; top: 17px; animation-delay: 160ms; }
+    .loading-piece span:nth-child(4) { left: 34px; top: 0; animation-delay: 240ms; }
+
+    .loading-brand {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    #status {
+      color: #92998e;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    #progress {
+      width: min(240px, 62vw);
+      height: 3px;
+      border: 0;
+      accent-color: #b7e053;
+      background: #292e29;
+    }
+
+    #infobox {
+      position: fixed;
+      z-index: 30;
+      display: none;
+      padding: 12px 18px;
+      border: 1px solid #4d564b;
+      border-radius: 6px;
+      color: #f1eee2;
+      background: #242824;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    #pyconsole,
+    #crt,
+    #dlg,
+    #html {
+      display: none;
+    }
+
+    @keyframes pulse {
+      from { transform: translateY(0); background: #45cddd; }
+      to { transform: translateY(-4px); background: #f0685b; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .loading-piece span {
+        animation: none;
+      }
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/browserfs@1.4.3/dist/browserfs.min.js"></script>
+</head>
+
+<body>
+  <div id="transfer">
+    <div class="loading-piece" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <div class="loading-brand">STACKLINE</div>
+    <div id="status">ASSEMBLING PLAYFIELD</div>
+    <progress value="0" max="100" id="progress"></progress>
+  </div>
+
+  <canvas
+    class="emscripten"
+    id="canvas"
+    width="1"
+    height="1"
+    oncontextmenu="event.preventDefault()"
+    tabindex="1"
+  ></canvas>
+  <canvas
+    class="emscripten"
+    id="canvas3d"
+    width="{{cookiecutter.width}}"
+    height="{{cookiecutter.height}}"
+    oncontextmenu="event.preventDefault()"
+    tabindex="1"
+    hidden
+  ></canvas>
+
+  <div id="infobox">PREPARING PYTHON</div>
+  <div id="html"></div>
+  <div id="crt">
+    <div id="system" hidden>
+      <button id="aiostop" disabled></button>
+      <button id="aiopaused_true" disabled></button>
+      <button id="aiopaused_false" disabled></button>
+      <button id="pygame_mixer_music_pause" disabled></button>
+      <div id="load_min"></div>
+      <div id="load_avg"></div>
+      <div id="load_max"></div>
+      <button id="load_rst" disabled></button>
+      <div id="level"></div>
+      <div id="stateBattery"></div>
+    </div>
+    <div id="box" hidden>
+      <div id="info"></div>
+      <iframe id="iframe" name="iframe" hidden></iframe>
+    </div>
+  </div>
+  <div id="dlg" hidden>
+    <input type="file" id="dlg_multifile" multiple>
+  </div>
+  <div id="pyconsole" hidden>
+    <div id="terminal" tabindex="1"></div>
+  </div>
+
+  <script type="application/javascript">
+    globalThis.__canvas_resized = () => {};
+
+    async function custom_onload(debug_hidden) {
+      pyconsole.hidden = debug_hidden;
+      system.hidden = true;
+      transfer.hidden = false;
+      info.hidden = true;
+      box.hidden = true;
+      show_infobox();
+    }
+
+    function custom_prerun() {}
+    function custom_postrun() {}
+
+    function debug() {
+      python.config.debug = true;
+      custom_onload(false);
+      Module.PyRun_SimpleString("shell.uptime()");
+      window_resize();
+    }
+
+    function info_inline(data) {
+      document.getElementById("info").innerHTML = data;
+    }
+
+    function info_online(url) {
+      fetch(url)
+        .then((response) => response.text())
+        .then((html) => info_inline(html))
+        .catch((error) => console.warn(error));
+    }
+
+    function frame_online(url) {
+      window.frames.iframe.location = url;
+    }
+  </script>
+</body>
+</html>
