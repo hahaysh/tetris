@@ -33,10 +33,9 @@ jobs:
 
       - name: Build web artifact
         run: |
-          mkdir -p build/web
           python -m pygbag --build --title STACKLINE \
-            --package io.github.stackline.web --width 1000 --height 720 \
-            --ume_block 0 --template web/index.tmpl .
+            --package io.github.stackline.web --width 1280 --height 720 \
+            --ume_block 0 --template web/index.tmpl main.py
 
       - name: Disable Jekyll processing
         run: touch build/web/.nojekyll
